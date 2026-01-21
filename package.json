@@ -1,26 +1,51 @@
 {
   "name": "view-api",
-  "version": "1.0.1",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "server": "nodemon src/server.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "bin": {
-    "mock-runner": "./bin/mock-runner.js"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "version": "1.1.0",
+  "description": "Run mock APIs locally from a JSON configuration file",
   "type": "module",
+  "bin": {
+    "view-api": "./bin/mock-runner.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/RidloGhifary/view-api"
+  },
+  "homepage": "https://github.com/RidloGhifary/view-api",
+  "bugs": {
+    "url": "https://github.com/RidloGhifary/view-api/issues"
+  },
+  "files": [
+    "bin",
+    "src",
+    "README.md"
+  ],
+  "scripts": {
+    "dev": "nodemon bin/mock-runner.js start src/mocks/mock.json",
+    "start": "node bin/mock-runner.js",
+    "prepublishOnly": "npm run lint || true"
+  },
+  "keywords": [
+    "mock",
+    "api",
+    "mock-server",
+    "cli",
+    "frontend",
+    "testing",
+    "json"
+  ],
+  "author": "Ridlo",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  },
   "dependencies": {
     "commander": "^14.0.2",
     "cors": "^2.8.5",
-    "dotenv": "^17.2.3",
     "express": "^5.2.1",
     "helmet": "^8.1.0",
-    "morgan": "^1.10.1",
+    "morgan": "^1.10.1"
+  },
+  "devDependencies": {
     "nodemon": "^3.1.11"
   }
 }
