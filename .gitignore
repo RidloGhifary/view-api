@@ -4,3 +4,6 @@ node_modules
 
 dist
 todo.txt
+.vscode
+.DS_Store
+.idea

@@ -648,9 +648,22 @@
                 >npm install -g view-api</code
               >
               <span
+                id="copy-icon-2"
+                onclick="copyToClipboard('npm install -g view-api')"
                 class="material-symbols-outlined text-slate-500 cursor-pointer hover:text-white transition-colors"
                 >content_copy</span
               >
+
+              <script>
+                function copyToClipboard(text) {
+                  navigator.clipboard.writeText(text);
+                  const copyIcon = document.getElementById("copy-icon-2");
+                  copyIcon.textContent = "done";
+                  setTimeout(() => {
+                    copyIcon.textContent = "content_copy";
+                  }, 1000);
+                }
+              </script>
             </div>
           </div>
         </div>
