@@ -1,51 +1,48 @@
 {
-  "version": "1.0.0",
-  "routes": {
-    "GET /products": {
-      "behavior": {
-        "successRate": 50
+  "GET /products": {
+    "behavior": {
+      "successRate": 50
+    },
+    "responses": {
+      "success": {
+        "statusCode": 200,
+        "body": {
+          "status": "success",
+          "message": "Products fetched wkwk",
+          "data": [
+            {
+              "id": 1,
+              "name": "Product A",
+              "price": 10000,
+              "stock": 50
+            },
+            {
+              "id": 2,
+              "name": "Product B",
+              "price": 15000,
+              "stock": 30
+            }
+          ]
+        }
       },
-      "responses": {
-        "success": {
-          "statusCode": 200,
+      "errors": [
+        {
+          "statusCode": 500,
           "body": {
-            "status": "success",
-            "message": "Products fetched wkwk",
-            "data": [
-              {
-                "id": 1,
-                "name": "Product A",
-                "price": 10000,
-                "stock": 50
-              },
-              {
-                "id": 2,
-                "name": "Product B",
-                "price": 15000,
-                "stock": 30
-              }
-            ]
+            "status": "failed",
+            "message": "Server error",
+            "error_code": "SERVER_ERROR"
           }
         },
-        "errors": [
-          {
-            "statusCode": 500,
-            "body": {
-              "status": "failed",
-              "message": "Server error",
-              "error_code": "SERVER_ERROR"
-            }
-          },
-          {
-            "statusCode": 400,
-            "body": {
-              "status": "failed",
-              "message": "Bad request, invalid parameters",
-              "error_code": "INVALID_PARAMETERS"
-            }
+        {
+          "statusCode": 400,
+          "body": {
+            "status": "failed",
+            "message": "Bad request, invalid parameters",
+            "error_code": "INVALID_PARAMETERS"
           }
-        ]
-      }
+        }
+      ]
     }
   }
 }

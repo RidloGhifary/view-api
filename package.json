@@ -1,6 +1,6 @@
 {
   "name": "view-api",
-  "version": "1.1.0",
+  "version": "2.0.0",
   "description": "Run mock APIs locally from a JSON configuration file",
   "type": "module",
   "bin": {
@@ -20,7 +20,7 @@
     "README.md"
   ],
   "scripts": {
-    "dev": "nodemon bin/mock-runner.js start src/mocks/mock.json",
+    "dev": "nodemon bin/mock-runner.js dev src/mocks/mock.json",
     "start": "node bin/mock-runner.js",
     "prepublishOnly": "npm run lint || true"
   },
@@ -31,16 +31,22 @@
     "cli",
     "frontend",
     "testing",
-    "json"
+    "json",
+    "view-api"
   ],
-  "author": "Ridlo",
+  "author": "Ridlo Achmad Ghifary <ridloghfry@gmail.com>",
+  "private": false,
   "license": "MIT",
   "engines": {
     "node": ">=18"
   },
   "dependencies": {
+    "@codemirror/lang-json": "^6.0.2",
+    "@codemirror/theme-one-dark": "^6.1.3",
+    "codemirror": "^6.0.2",
     "commander": "^14.0.2",
     "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
     "express": "^5.2.1",
     "helmet": "^8.1.0",
     "morgan": "^1.10.1"

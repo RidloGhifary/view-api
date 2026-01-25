@@ -1,20 +1,38 @@
 #!/usr/bin/env node
 
-import path from "path";
 import { program } from "commander";
-import startServer from "../src/server.js";
+import { startApiServer } from "../src/api/server.js";
+import { startEditorServer } from "../src/editor/server.js";
+import { loadConfig } from "../src/shared/config.js";
 
 program
-  .name("mock-runner")
-  .description("Run mock APIs from a JSON config")
-  .version("1.0.0");
+  .name("view-api")
+  .description("Run mock APIs locally from a JSON configuration file")
+  .version("2.0.0");
 
+/**
+ * DEV — API + Editor
+ */
 program
-  .command("start <config>")
-  .option("-p, --port <port>", "port to run server", "3000")
-  .action((config, options) => {
-    const configPath = path.resolve(process.cwd(), config);
-    startServer({ configPath, port: Number(options.port) || 8734 });
+  .command("dev [configPath]")
+  .description("Start mock API with live editor UI")
+  .option("--api-port <port>", "API port", 8723)
+  .option("--ui-port <port>", "Editor UI port", 8724)
+  .action((configPath, options) => {
+    if (configPath && !configPath.endsWith(".json")) {
+      console.error("➜ Config file must be a .json file");
+      process.exit(1);
+    }
+
+    if (options.apiPort === options.uiPort) {
+      console.error("➜ API port and UI port must be different");
+      process.exit(1);
+    }
+
+    loadConfig(configPath);
+
+    startApiServer({ port: Number(options.apiPort) });
+    startEditorServer({ port: Number(options.uiPort) });
   });
 
 program.parse();

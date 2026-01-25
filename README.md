@@ -6,10 +6,11 @@ Perfect for frontend development, testing, and prototyping without a real backen
 
 ## ✨ Features
 
-- Run mock APIs from a single JSON file
+- Run a command and get editor and the api fetchable
 - Auto Refresh JSON file
 - Customizable port
 - Randomized success / error responses
+- Delay response
 - Zero setup for frontend teams
 - Works fully offline
 
@@ -20,62 +21,96 @@ You don’t need to install it globally.
 Run directly with `npx`:
 
 ```bash
-npx view-api start ./mock.json --port 4000
+# simpler way
+npx view-api dev
+
+or
+
+# use your own file
+npx view-api dev <file-path>
 ```
 
 Or install globally:
 
 ```bash
 npm install -g view-api
-view-api start mock.json
+view-api dev
 ```
 
 ## 🚀 Usage
 
 ```bash
-view-api start <config-path> [options]
+view-api dev <config-path> [options]
 ```
 
 ### Options
 
-| Option         | Description            | Default |
-| -------------- | ---------------------- | ------- |
-| `--port`, `-p` | Port to run the server | `3000`  |
+| Option       | Description            | Default |
+| ------------ | ---------------------- | ------- |
+| `--api-port` | Port to run the api    | `8723`  |
+| `--ui-port`  | Port to run the editor | `8724`  |
 
 Example:
 
 ```bash
-view-api start src/mocks/mock.json --port 4000
+view-api dev src/mocks/mock.json --api-port 4000 --ui-port 4001
+```
+
+Then you will have running editor and the API endpoint:
+
+```bash
+➜ API running at   http://localhost:4000
+➜ EDITOR running at   http://localhost:4001
 ```
 
 ## 📄 Mock Config Format
 
 ```json
 {
-  "version": "1.0.0",
-  "routes": {
-    "GET /products": {
-      "behavior": {
-        "successRate": 70
+  "GET /products": {
+    "behavior": {
+      "successRate": 50
+    },
+    "responses": {
+      "success": {
+        "statusCode": 200,
+        "body": {
+          "status": "success",
+          "message": "Products fetched wkwk",
+          "data": [
+            {
+              "id": 1,
+              "name": "Product A",
+              "price": 10000,
+              "stock": 50
+            },
+            {
+              "id": 2,
+              "name": "Product B",
+              "price": 15000,
+              "stock": 30
+            }
+          ]
+        }
       },
-      "responses": {
-        "success": {
-          "statusCode": 200,
+      "errors": [
+        {
+          "statusCode": 500,
           "body": {
-            "status": "success",
-            "data": [{ "id": 1, "name": "Product A" }]
+            "status": "failed",
+            "message": "Server error",
+            "error_code": "SERVER_ERROR"
           }
         },
-        "errors": [
-          {
-            "statusCode": 500,
-            "body": {
-              "status": "failed",
-              "message": "Server error"
-            }
+        {
+          "statusCode": 400,
+          "body": {
+            "status": "failed",
+            "message": "Bad request, invalid parameters",
+            "error_code": "INVALID_PARAMETERS"
           }
-        ]
-      }
+        }
+      ]
     }
   }
 }
@@ -83,4 +118,4 @@ view-api start src/mocks/mock.json --port 4000
 
 ## 📜 License
 
-MIT
+Licensed under the MIT License.
