@@ -24,7 +24,7 @@ Run directly with `npx`:
 # simpler way
 npx view-api dev
 
-or
+# or
 
 # use your own file
 npx view-api dev <file-path>
@@ -40,7 +40,7 @@ view-api dev
 ## 🚀 Usage
 
 ```bash
-view-api dev <config-path> [options]
+view-api dev <file-path> [options]
 ```
 
 ### Options
@@ -63,13 +63,21 @@ Then you will have running editor and the API endpoint:
 ➜ EDITOR running at   http://localhost:4001
 ```
 
+### Behavior Options
+
+| Option        | Description                                    |
+| ------------- | ---------------------------------------------- |
+| `successRate` | Determine how much the request success rate    |
+| `delay`       | Determine how long the request will be delayed |
+
 ## 📄 Mock Config Format
 
 ```json
 {
   "GET /products": {
     "behavior": {
-      "successRate": 50
+      "successRate": 50,
+      "delay": 1000
     },
     "responses": {
       "success": {
