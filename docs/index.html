@@ -131,23 +131,12 @@
               >npx view-api dev</code
             >
             <button
-              onclick="copyToClipboard('npx view-api dev')"
+              onclick="copyToClipboard('npx view-api dev', 'copy-icon')"
               class="bg-primary text-background-dark p-2 md:p-3 rounded-lg flex items-center justify-center hover:scale-95 transition-transform">
               <span id="copy-icon" class="material-symbols-outlined"
                 >content_copy</span
               >
             </button>
-
-            <script>
-              function copyToClipboard(text) {
-                navigator.clipboard.writeText(text);
-                const copyIcon = document.getElementById("copy-icon");
-                copyIcon.textContent = "done";
-                setTimeout(() => {
-                  copyIcon.textContent = "content_copy";
-                }, 1000);
-              }
-            </script>
           </div>
           <a
             href="https://www.npmjs.com/package/view-api?activeTab=readme"
@@ -649,19 +638,21 @@
               >
               <span
                 id="copy-icon-2"
-                onclick="copyToClipboard('npm install -g view-api')"
+                onclick="
+                  copyToClipboard('npm install -g view-api', 'copy-icon-2')
+                "
                 class="material-symbols-outlined text-slate-500 cursor-pointer hover:text-white transition-colors"
                 >content_copy</span
               >
 
               <script>
-                function copyToClipboard(text) {
+                function copyToClipboard(text, elementId) {
                   navigator.clipboard.writeText(text);
-                  const copyIcon = document.getElementById("copy-icon-2");
+                  const copyIcon = document.getElementById(elementId);
                   copyIcon.textContent = "done";
                   setTimeout(() => {
                     copyIcon.textContent = "content_copy";
-                  }, 1000);
+                  }, 3000);
                 }
               </script>
             </div>
