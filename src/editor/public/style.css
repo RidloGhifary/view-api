@@ -38,3 +38,26 @@ body {
   background: #7f1d1d;
   color: #fecaca;
 }
+
+#prettify-btn {
+  background: #3b82f6;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 14px;
+  font-size: 18px;
+  font-family: inherit;
+  cursor: pointer;
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  z-index: 1000;
+}
+
+#prettify-btn:hover {
+  background: #2563eb;
+}
+
+#prettify-btn:active {
+  background: #1d4ed8;
+}

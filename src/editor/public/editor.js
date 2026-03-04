@@ -76,3 +76,23 @@ function showStatus(text, isError) {
     statusEl.style.opacity = "0";
   }, 2500);
 }
+
+// Prettify button
+document.getElementById("prettify-btn").addEventListener("click", () => {
+  try {
+    const value = editor.state.doc.toString();
+    const pretty = JSON.stringify(JSON.parse(value), null, 2);
+
+    editor.dispatch({
+      changes: {
+        from: 0,
+        to: editor.state.doc.length,
+        insert: pretty,
+      },
+    });
+
+    showStatus("Prettified ✓", false);
+  } catch {
+    showStatus("Invalid JSON ✗", true);
+  }
+});
