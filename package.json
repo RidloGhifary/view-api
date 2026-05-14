@@ -22,7 +22,6 @@
   "scripts": {
     "dev": "nodemon bin/mock-runner.js dev src/mocks/mock.json",
     "start": "node bin/mock-runner.js",
-    "prepublishOnly": "npm run lint || true"
   },
   "keywords": [
     "mock",
