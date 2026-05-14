@@ -1,6 +1,6 @@
 {
   "name": "view-api",
-  "version": "3.0.2",
+  "version": "3.1.0",
   "description": "Run mock APIs locally from a JSON configuration file",
   "type": "module",
   "bin": {
@@ -21,8 +21,7 @@
   ],
   "scripts": {
     "dev": "nodemon bin/mock-runner.js dev src/mocks/mock.json",
-    "start": "node bin/mock-runner.js",
-    "prepublishOnly": "npm run lint || true"
+    "start": "node bin/mock-runner.js"
   },
   "keywords": [
     "mock",

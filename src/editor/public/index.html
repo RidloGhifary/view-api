@@ -2,13 +2,160 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>View API Editor</title>
     <link rel="stylesheet" href="./style.css" />
   </head>
   <body>
-    <button id="prettify-btn" title="Prettify JSON">⚡ Prettify</button>
-    <div id="editor"></div>
-    <div id="status"></div>
+    <div id="app">
+      <aside id="sidebar">
+        <div class="sidebar-header">
+          <div>
+            <p class="eyebrow">Mock endpoints</p>
+            <h1>View API</h1>
+          </div>
+          <button
+            id="add-endpoint"
+            class="primary-button"
+            type="button"
+            title="Add endpoint"
+            aria-label="Add endpoint"
+          >
+            +
+          </button>
+        </div>
+
+        <div id="endpoint-list" aria-label="Endpoint list"></div>
+      </aside>
+
+      <main id="main">
+        <section class="main-toolbar">
+          <div class="main-toolbar-header">
+            <div>
+              <h2 id="endpoint-name">No endpoint selected</h2>
+              <div class="endpoint-route-line">
+                <span id="endpoint-method-badge" class="method-badge method-get">
+                  GET
+                </span>
+                <span id="endpoint-route-text">/</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="compact-config-bar">
+            <label class="compact-control success-control">
+              <span class="compact-label">Success</span>
+              <div class="success-inline">
+                <input type="range" id="success-rate" min="0" max="100" />
+                <strong id="success-rate-value">100%</strong>
+              </div>
+            </label>
+
+            <label class="compact-control delay-control">
+              <span class="compact-label">Delay</span>
+              <div class="delay-inline">
+                <input id="delay-input" type="number" min="0" step="50" />
+                <span class="input-suffix">ms</span>
+              </div>
+            </label>
+          </div>
+        </section>
+
+        <section class="response-panel">
+          <div class="response-panel-header">
+            <div>
+              <p class="eyebrow">Responses</p>
+              <h3 id="editor-title">Response Body</h3>
+              <p id="editor-subtitle" class="muted">
+                Edit the JSON returned by this mock endpoint.
+              </p>
+            </div>
+
+            <div class="response-actions">
+              <button id="prettify-button" class="secondary-button" type="button">
+                Prettify
+              </button>
+              <div id="tabs" class="tab-row" aria-label="Response tabs"></div>
+            </div>
+          </div>
+
+          <div id="empty-state" class="empty-state" hidden>
+            <h3>No endpoint selected</h3>
+            <p>Add an endpoint from the sidebar to start editing responses.</p>
+          </div>
+
+          <div id="editor-container"></div>
+        </section>
+      </main>
+    </div>
+
+    <div id="status" class="status-toast" role="status" aria-live="polite"></div>
+
+    <div id="endpoint-edit-modal" class="modal-backdrop" hidden>
+      <div
+        class="modal-card"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="endpoint-edit-title"
+      >
+        <div class="modal-header">
+          <div>
+            <p class="eyebrow">Endpoint settings</p>
+            <h3 id="endpoint-edit-title">Edit endpoint</h3>
+          </div>
+          <button
+            id="endpoint-modal-close"
+            class="icon-button"
+            type="button"
+            aria-label="Close endpoint editor"
+          >
+            ×
+          </button>
+        </div>
+
+        <form id="endpoint-edit-form" class="modal-form" novalidate>
+          <label class="field">
+            <span class="field-label">Name</span>
+            <input id="endpoint-edit-name" type="text" maxlength="80" />
+            <span id="endpoint-edit-name-error" class="field-error" hidden>
+              Name is required.
+            </span>
+          </label>
+
+          <label class="field">
+            <span class="field-label">Method</span>
+            <select id="endpoint-edit-method">
+              <option value="get">GET</option>
+              <option value="post">POST</option>
+              <option value="put">PUT</option>
+              <option value="patch">PATCH</option>
+              <option value="delete">DELETE</option>
+            </select>
+          </label>
+
+          <label class="field">
+            <span class="field-label">Path</span>
+            <input id="endpoint-edit-path" type="text" spellcheck="false" />
+            <span id="endpoint-edit-path-error" class="field-error" hidden>
+              Path must start with /.
+            </span>
+          </label>
+
+          <div class="modal-actions">
+            <button id="endpoint-modal-cancel" class="ghost-button" type="button">
+              Cancel
+            </button>
+            <button
+              id="endpoint-modal-save"
+              class="primary-button"
+              type="button"
+            >
+              Save changes
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
 
     <script type="module" src="./editor.js"></script>
   </body>
