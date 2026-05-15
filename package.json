@@ -17,7 +17,10 @@
   "files": [
     "bin",
     "src",
-    "README.md"
+    "README.md",
+	"LICENSE",
+"CONTRIBUTING.md",
+"CODE_OF_CONDUCT.md"
   ],
   "scripts": {
     "dev": "nodemon bin/mock-runner.js dev src/mocks/mock.json",
