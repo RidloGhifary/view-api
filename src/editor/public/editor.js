@@ -37,8 +37,8 @@ const refs = {
   endpointName: document.getElementById("endpoint-name"),
   endpointMethodBadge: document.getElementById("endpoint-method-badge"),
   endpointRouteText: document.getElementById("endpoint-route-text"),
+  endpointControls: document.getElementById("endpoint-controls"),
   successRate: document.getElementById("success-rate"),
-  successRateValue: document.getElementById("success-rate-value"),
   delayInput: document.getElementById("delay-input"),
   tabs: document.getElementById("tabs"),
   prettifyButton: document.getElementById("prettify-button"),
@@ -52,6 +52,7 @@ const refs = {
   endpointEditName: document.getElementById("endpoint-edit-name"),
   endpointEditMethod: document.getElementById("endpoint-edit-method"),
   endpointEditPath: document.getElementById("endpoint-edit-path"),
+  endpointEditTitle: document.getElementById("endpoint-edit-title"),
   endpointEditNameError: document.getElementById("endpoint-edit-name-error"),
   endpointEditPathError: document.getElementById("endpoint-edit-path-error"),
   endpointModalClose: document.getElementById("endpoint-modal-close"),
@@ -64,18 +65,21 @@ const customTheme = EditorView.theme({
     height: "100%",
     fontSize: "14px",
     backgroundColor: "#0f172a",
-    color: "#e2e8f0",
+    color: "#e5e7eb",
   },
   ".cm-scroller": {
     fontFamily: '"JetBrains Mono", "Fira Code", monospace',
   },
   ".cm-content": {
-    padding: "16px",
+    padding: "18px",
   },
   ".cm-gutters": {
-    backgroundColor: "#111827",
+    backgroundColor: "#0b1220",
     color: "#64748b",
     border: "none",
+  },
+  ".cm-activeLine, .cm-activeLineGutter": {
+    backgroundColor: "rgba(6, 182, 212, 0.08)",
   },
 });
 
@@ -96,7 +100,7 @@ let saveQueue = Promise.resolve();
 
 init().catch((error) => {
   console.error("Failed to load editor:", error);
-  showStatus("Failed to load config ✗", true);
+  showStatus("Failed to load config", true);
 });
 
 async function init() {
@@ -181,21 +185,19 @@ function bindEvents() {
   });
 
   refs.successRate.addEventListener("input", () => {
-    const endpoint = getActiveEndpoint();
-    if (!endpoint) return;
+    updateSuccessRateFromInput();
+  });
 
-    endpoint.successRate = Number(refs.successRate.value);
-    refs.successRateValue.textContent = `${endpoint.successRate}%`;
-    scheduleSync();
+  refs.successRate.addEventListener("change", () => {
+    updateSuccessRateFromInput({ commitEmpty: true });
   });
 
   refs.delayInput.addEventListener("input", () => {
-    const endpoint = getActiveEndpoint();
-    if (!endpoint) return;
+    updateDelayFromInput();
+  });
 
-    endpoint.delay = Math.max(0, Number(refs.delayInput.value) || 0);
-    refs.delayInput.value = String(endpoint.delay);
-    scheduleSync();
+  refs.delayInput.addEventListener("change", () => {
+    updateDelayFromInput({ commitEmpty: true });
   });
 
   refs.prettifyButton.addEventListener("click", () => {
@@ -237,13 +239,47 @@ function bindEvents() {
   });
 }
 
+function updateSuccessRateFromInput(options = {}) {
+  const endpoint = getActiveEndpoint();
+  if (!endpoint) return;
+
+  const fallback = endpoint.successRate ?? 100;
+  if (!options.commitEmpty && isEmptyInputValue(refs.successRate.value)) return;
+
+  const nextValue = Math.round(
+    clampNumber(refs.successRate.value, 0, 100, fallback),
+  );
+  endpoint.successRate = nextValue;
+  refs.successRate.value = String(nextValue);
+  scheduleSync();
+}
+
+function updateDelayFromInput(options = {}) {
+  const endpoint = getActiveEndpoint();
+  if (!endpoint) return;
+
+  if (!options.commitEmpty && isEmptyInputValue(refs.delayInput.value)) return;
+
+  const nextValue = clampNumber(refs.delayInput.value, 0, Infinity, 0);
+  endpoint.delay = nextValue;
+  refs.delayInput.value = String(nextValue);
+  scheduleSync();
+}
+
 function renderSidebar() {
   refs.endpointList.innerHTML = "";
 
   if (endpoints.length === 0) {
     const empty = document.createElement("div");
     empty.className = "sidebar-empty";
-    empty.textContent = "No endpoints yet";
+
+    const title = document.createElement("h3");
+    title.textContent = "No endpoints yet";
+
+    const copy = document.createElement("p");
+    copy.textContent = "Add one to start mocking APIs.";
+
+    empty.append(title, copy);
     refs.endpointList.appendChild(empty);
     return;
   }
@@ -265,24 +301,11 @@ function renderSidebar() {
     const main = document.createElement("div");
     main.className = "endpoint-card-main";
 
-    const top = document.createElement("div");
-    top.className = "endpoint-card-top";
-
     const methodBadge = document.createElement("span");
     setMethodBadge(methodBadge, endpoint.method);
 
-    const menuButton = document.createElement("button");
-    menuButton.type = "button";
-    menuButton.className = "menu-trigger";
-    if (openMenuIndex === index) menuButton.classList.add("is-open");
-    menuButton.setAttribute("aria-label", "Open endpoint actions");
-    menuButton.textContent = "⋮";
-    menuButton.addEventListener("click", (event) => {
-      event.stopPropagation();
-      renderEndpointMenu(index, menuButton);
-    });
-
-    top.append(methodBadge, menuButton);
+    const text = document.createElement("div");
+    text.className = "endpoint-card-text";
 
     const title = document.createElement("div");
     title.className = "endpoint-card-title";
@@ -292,8 +315,25 @@ function renderSidebar() {
     path.className = "endpoint-path";
     path.textContent = endpoint.path;
 
-    main.append(top, title, path);
-    item.appendChild(main);
+    text.append(title, path);
+
+    const top = document.createElement("div");
+    top.className = "endpoint-card-top";
+    top.append(methodBadge, text);
+
+    const menuButton = document.createElement("button");
+    menuButton.type = "button";
+    menuButton.className = "menu-trigger";
+    if (openMenuIndex === index) menuButton.classList.add("is-open");
+    menuButton.setAttribute("aria-label", "Open endpoint actions");
+    menuButton.textContent = "⋮";
+    menuButton.addEventListener("click", (event) => {
+      event.stopPropagation();
+      openEndpointMenu(index, menuButton);
+    });
+
+    main.appendChild(top);
+    item.append(main, menuButton);
 
     if (openMenuIndex === index) {
       item.appendChild(createEndpointMenu(index));
@@ -303,7 +343,7 @@ function renderSidebar() {
   });
 }
 
-function renderEndpointMenu(endpointIndex, anchorElement) {
+function openEndpointMenu(endpointIndex, anchorElement) {
   const nextIndex = openMenuIndex === endpointIndex ? null : endpointIndex;
   openMenuIndex = nextIndex;
 
@@ -362,6 +402,8 @@ function openEndpointEditModal(endpointIndex) {
   closeEndpointMenu({ rerender: true });
   clearEndpointEditErrors();
 
+  refs.endpointEditTitle.textContent = "Edit endpoint";
+  refs.endpointModalSave.textContent = "Save changes";
   refs.endpointEditName.value = normalizeEndpointName(endpoint.name, endpoint.path);
   refs.endpointEditMethod.value = endpoint.method;
   refs.endpointEditPath.value = endpoint.path;
@@ -380,6 +422,8 @@ function openEndpointCreateModal() {
   clearEndpointEditErrors();
 
   const endpoint = DEFAULT_ENDPOINT();
+  refs.endpointEditTitle.textContent = "Add endpoint";
+  refs.endpointModalSave.textContent = "Save changes";
   refs.endpointEditName.value = endpoint.name;
   refs.endpointEditMethod.value = endpoint.method;
   refs.endpointEditPath.value = endpoint.path;
@@ -406,6 +450,8 @@ function closeEndpointModal() {
   endpointModalMode = null;
   editingEndpointIndex = null;
   refs.endpointEditModal.hidden = true;
+  refs.endpointEditTitle.textContent = "Edit endpoint";
+  refs.endpointModalSave.textContent = "Save changes";
   refs.endpointEditName.value = "";
   refs.endpointEditMethod.value = "get";
   refs.endpointEditPath.value = "";
@@ -415,7 +461,8 @@ function closeEndpointModal() {
 async function saveEndpointEdit() {
   const nextName = refs.endpointEditName.value.trim();
   const nextMethod = refs.endpointEditMethod.value.toLowerCase();
-  const nextPath = normalizePath(refs.endpointEditPath.value);
+  const rawPath = refs.endpointEditPath.value.trim();
+  const nextPath = normalizePath(rawPath);
 
   let hasError = false;
 
@@ -426,7 +473,7 @@ async function saveEndpointEdit() {
     refs.endpointEditNameError.hidden = true;
   }
 
-  if (!nextPath || !nextPath.startsWith("/")) {
+  if (!rawPath || !rawPath.startsWith("/")) {
     refs.endpointEditPathError.hidden = false;
     hasError = true;
   } else {
@@ -459,7 +506,7 @@ async function saveEndpointEdit() {
   renderSidebar();
   renderMain();
   closeEndpointModal();
-  await syncConfig();
+  await syncConfig("Endpoint updated");
 }
 
 function clearEndpointEditErrors() {
@@ -469,40 +516,64 @@ function clearEndpointEditErrors() {
 
 function renderMain() {
   const endpoint = getActiveEndpoint();
-  const hasEndpoint = Boolean(endpoint);
 
-  refs.emptyState.hidden = hasEndpoint;
-  refs.successRate.disabled = !hasEndpoint;
-  refs.delayInput.disabled = !hasEndpoint;
-  refs.prettifyButton.disabled = !hasEndpoint;
-  refs.tabs.innerHTML = "";
+  if (endpoint) {
+    endpoint.errors = Array.isArray(endpoint.errors) ? endpoint.errors : [];
+    if (activeTab === "error" && endpoint.errors.length === 0) {
+      activeTab = "success";
+    }
+    activeErrorIndex = clampErrorIndex(endpoint);
+  }
 
-  if (!hasEndpoint) {
+  renderEndpointOverview(endpoint);
+  renderEndpointControls(endpoint);
+  renderResponseEditor(endpoint);
+}
+
+function renderEndpointOverview(endpoint) {
+  if (!endpoint) {
     refs.endpointName.textContent = "No endpoint selected";
     setMethodBadge(refs.endpointMethodBadge, "get");
     refs.endpointRouteText.textContent = "/";
+    return;
+  }
+
+  refs.endpointName.textContent = normalizeEndpointName(endpoint.name, endpoint.path);
+  setMethodBadge(refs.endpointMethodBadge, endpoint.method);
+  refs.endpointRouteText.textContent = endpoint.path;
+}
+
+function renderEndpointControls(endpoint) {
+  const hasEndpoint = Boolean(endpoint);
+
+  refs.endpointControls.hidden = !hasEndpoint;
+  refs.successRate.disabled = !hasEndpoint;
+  refs.delayInput.disabled = !hasEndpoint;
+
+  if (!endpoint) {
     refs.successRate.value = "100";
-    refs.successRateValue.textContent = "100%";
     refs.delayInput.value = "0";
+    return;
+  }
+
+  refs.successRate.value = String(endpoint.successRate ?? 100);
+  refs.delayInput.value = String(endpoint.delay ?? 0);
+}
+
+function renderResponseEditor(endpoint) {
+  const hasEndpoint = Boolean(endpoint);
+
+  refs.emptyState.hidden = hasEndpoint;
+  refs.prettifyButton.disabled = !hasEndpoint;
+  refs.tabs.innerHTML = "";
+
+  if (!endpoint) {
     refs.editorTitle.textContent = "Response Body";
     refs.editorSubtitle.textContent = "Add an endpoint to start editing JSON.";
     destroyEditor();
     refs.editorContainer.hidden = true;
     return;
   }
-
-  endpoint.errors = Array.isArray(endpoint.errors) ? endpoint.errors : [];
-  if (activeTab === "error" && endpoint.errors.length === 0) {
-    activeTab = "success";
-  }
-  activeErrorIndex = clampErrorIndex(endpoint);
-
-  refs.endpointName.textContent = normalizeEndpointName(endpoint.name, endpoint.path);
-  setMethodBadge(refs.endpointMethodBadge, endpoint.method);
-  refs.endpointRouteText.textContent = endpoint.path;
-  refs.successRate.value = String(endpoint.successRate ?? 100);
-  refs.successRateValue.textContent = `${endpoint.successRate ?? 100}%`;
-  refs.delayInput.value = String(endpoint.delay ?? 0);
 
   renderTabs(endpoint);
   createOrRefreshEditor(getActiveResponseContent(endpoint));
@@ -603,7 +674,7 @@ async function saveEditorJson() {
     scheduleSync();
   } catch (error) {
     console.error("Invalid JSON:", error);
-    showStatus("Invalid JSON ✗", true);
+    showStatus("Invalid JSON", true);
   }
 }
 
@@ -627,11 +698,11 @@ async function prettifyActiveEditor() {
     ignoreEditorChanges = false;
 
     applyActiveEditorValue(endpoint, parsed);
-    await syncConfig("Prettified ✓");
+    await syncConfig("Prettified");
   } catch (error) {
     console.error("Invalid JSON:", error);
     ignoreEditorChanges = false;
-    showStatus("Invalid JSON ✗", true);
+    showStatus("Invalid JSON", true);
   }
 }
 
@@ -651,9 +722,10 @@ function addError() {
   endpoint.errors.push(DEFAULT_ERROR());
   activeTab = "error";
   activeErrorIndex = endpoint.errors.length - 1;
+  renderEndpointOverview(endpoint);
   renderTabs(endpoint);
   createOrRefreshEditor(getActiveResponseContent(endpoint));
-  scheduleSync();
+  scheduleSync("Saved");
 }
 
 function deleteError(index) {
@@ -675,8 +747,9 @@ function deleteError(index) {
   }
 
   renderTabs(endpoint);
+  renderEndpointOverview(endpoint);
   createOrRefreshEditor(getActiveResponseContent(endpoint));
-  scheduleSync();
+  scheduleSync("Saved");
 }
 
 function deleteEndpoint(index) {
@@ -699,17 +772,17 @@ function deleteEndpoint(index) {
 
   renderSidebar();
   renderMain();
-  scheduleSync();
+  scheduleSync("Endpoint deleted");
 }
 
-function scheduleSync(successMessage = "Saved ✓") {
+function scheduleSync(successMessage = "Saved") {
   clearTimeout(syncTimer);
   syncTimer = setTimeout(() => {
     void syncConfig(successMessage);
   }, 400);
 }
 
-async function syncConfig(successMessage = "Saved ✓") {
+async function syncConfig(successMessage = "Saved") {
   clearTimeout(syncTimer);
   config = buildConfig(endpoints);
   const payload = JSON.stringify(config);
@@ -733,7 +806,7 @@ async function syncConfig(successMessage = "Saved ✓") {
     })
     .catch((error) => {
       console.error("Save failed:", error);
-      showStatus("Save failed ✗", true);
+      showStatus("Save failed", true);
     });
 
   return saveQueue;
@@ -775,6 +848,21 @@ function getActiveResponseContent(endpoint) {
 function clampErrorIndex(endpoint) {
   if (!endpoint || !endpoint.errors?.length) return 0;
   return Math.max(0, Math.min(activeErrorIndex, endpoint.errors.length - 1));
+}
+
+function clampNumber(value, min, max, fallback) {
+  const rawValue = String(value ?? "").trim();
+  if (!rawValue) return fallback;
+
+  const number = Number(rawValue);
+  if (!Number.isFinite(number)) return fallback;
+
+  const lowerBounded = Math.max(min, number);
+  return Number.isFinite(max) ? Math.min(max, lowerBounded) : lowerBounded;
+}
+
+function isEmptyInputValue(value) {
+  return String(value ?? "").trim() === "";
 }
 
 function parseFlatEndpoint(method, path, routeConfig) {
