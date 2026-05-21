@@ -10,13 +10,16 @@
     <div id="app">
       <aside id="sidebar">
         <div class="sidebar-header">
-          <div>
-            <p class="eyebrow">Mock endpoints</p>
-            <h1>View API</h1>
+          <div class="brand-lockup">
+            <div class="brand-mark" aria-hidden="true">V</div>
+            <div>
+              <h1>View API</h1>
+              <p>Mock endpoints</p>
+            </div>
           </div>
           <button
             id="add-endpoint"
-            class="primary-button"
+            class="icon-accent-button"
             type="button"
             title="Add endpoint"
             aria-label="Add endpoint"
@@ -29,41 +32,57 @@
       </aside>
 
       <main id="main">
-        <section class="main-toolbar">
-          <div class="main-toolbar-header">
-            <div>
-              <h2 id="endpoint-name">No endpoint selected</h2>
-              <div class="endpoint-route-line">
-                <span id="endpoint-method-badge" class="method-badge method-get">
-                  GET
-                </span>
-                <span id="endpoint-route-text">/</span>
-              </div>
+        <section
+          id="endpoint-overview"
+          class="dashboard-card endpoint-overview endpoint-header-card"
+        >
+          <div class="overview-copy">
+            <h2 id="endpoint-name">No endpoint selected</h2>
+            <div class="endpoint-route-line">
+              <span id="endpoint-method-badge" class="method-badge method-get">
+                GET
+              </span>
+              <span id="endpoint-route-text">/</span>
             </div>
           </div>
 
-          <div class="compact-config-bar">
-            <label class="compact-control success-control">
-              <span class="compact-label">Success</span>
-              <div class="success-inline">
-                <input type="range" id="success-rate" min="0" max="100" />
-                <strong id="success-rate-value">100%</strong>
+          <div id="endpoint-controls" class="endpoint-controls" hidden>
+            <label class="compact-control">
+              <span class="compact-control-label">Success</span>
+              <div class="compact-input-row">
+                <input
+                  type="number"
+                  id="success-rate"
+                  class="compact-number-input"
+                  min="0"
+                  max="100"
+                  step="1"
+                  aria-label="Success rate percentage"
+                />
+                <span class="input-suffix">%</span>
               </div>
             </label>
 
-            <label class="compact-control delay-control">
-              <span class="compact-label">Delay</span>
-              <div class="delay-inline">
-                <input id="delay-input" type="number" min="0" step="50" />
+            <label class="compact-control">
+              <span class="compact-control-label">Delay</span>
+              <div class="compact-input-row">
+                <input
+                  id="delay-input"
+                  class="compact-number-input"
+                  type="number"
+                  min="0"
+                  step="50"
+                  aria-label="Delay in milliseconds"
+                />
                 <span class="input-suffix">ms</span>
               </div>
             </label>
           </div>
         </section>
 
-        <section class="response-panel">
+        <section class="dashboard-card response-panel">
           <div class="response-panel-header">
-            <div>
+            <div class="response-title">
               <p class="eyebrow">Responses</p>
               <h3 id="editor-title">Response Body</h3>
               <p id="editor-subtitle" class="muted">
