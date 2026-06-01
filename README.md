@@ -4,7 +4,7 @@ A lightweight CLI tool to run mock APIs locally from a JSON configuration file.
 
 Perfect for frontend development, testing, and prototyping without a real backend.
 
-## ✨ Features
+## Features
 
 - Run a command and get editor and the api fetchable
 - Auto Refresh JSON file
@@ -14,7 +14,7 @@ Perfect for frontend development, testing, and prototyping without a real backen
 - Zero setup for frontend teams
 - Works fully offline
 
-## 📦 Installation
+## Installation
 
 You don’t need to install it globally.
 
@@ -37,7 +37,7 @@ npm install -g view-api
 view-api dev
 ```
 
-## 🚀 Usage
+## Usage
 
 ```bash
 view-api dev <file-path> [options]
@@ -70,60 +70,6 @@ Then you will have running editor and the API endpoint:
 | `successRate` | Determine how much the request success rate    |
 | `delay`       | Determine how long the request will be delayed |
 
-## 📄 Mock Config Format
-
-```json
-{
-  "GET /products": {
-    "behavior": {
-      "successRate": 50,
-      "delay": 1000
-    },
-    "responses": {
-      "success": {
-        "statusCode": 200,
-        "body": {
-          "status": "success",
-          "message": "Products fetched wkwk",
-          "data": [
-            {
-              "id": 1,
-              "name": "Product A",
-              "price": 10000,
-              "stock": 50
-            },
-            {
-              "id": 2,
-              "name": "Product B",
-              "price": 15000,
-              "stock": 30
-            }
-          ]
-        }
-      },
-      "errors": [
-        {
-          "statusCode": 500,
-          "body": {
-            "status": "failed",
-            "message": "Server error",
-            "error_code": "SERVER_ERROR"
-          }
-        },
-        {
-          "statusCode": 400,
-          "body": {
-            "status": "failed",
-            "message": "Bad request, invalid parameters",
-            "error_code": "INVALID_PARAMETERS"
-          }
-        }
-      ]
-    }
-  }
-}
-```
-
-## 📜 License
+## License
 
 Licensed under the MIT License.
