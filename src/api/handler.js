@@ -1,6 +1,8 @@
 import { getConfig } from "../shared/config.js";
 import { chance, pickRandom } from "./random.js";
 
+const MAX_RESPONSE_DELAY_MS = 10000;
+
 export const handleMockRequest = (req, res) => {
   const key = `${req.method.toUpperCase()} ${req.path}`;
   const config = getConfig()[key];
@@ -17,7 +19,11 @@ export const handleMockRequest = (req, res) => {
 
   if (isSuccess || !errors?.length) {
     const { statusCode = 200, body } = config.responses.success;
-    const delay = config?.behavior?.delay ?? 0;
+    const rawDelay = Number(config?.behavior?.delay ?? 0);
+    const delay =
+      Number.isFinite(rawDelay) && rawDelay > 0
+        ? Math.min(rawDelay, MAX_RESPONSE_DELAY_MS)
+        : 0;
 
     if (!body) {
       return res.status(statusCode).json("No response body defined");
