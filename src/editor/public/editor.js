@@ -58,6 +58,10 @@ const refs = {
   endpointModalClose: document.getElementById("endpoint-modal-close"),
   endpointModalCancel: document.getElementById("endpoint-modal-cancel"),
   endpointModalSave: document.getElementById("endpoint-modal-save"),
+  clearLogsButton: document.getElementById("clear-logs"),
+  requestLogEmpty: document.getElementById("request-log-empty"),
+  requestLogList: document.getElementById("request-log-list"),
+  requestLogDetail: document.getElementById("request-log-detail"),
 };
 
 const customTheme = EditorView.theme({
@@ -97,6 +101,10 @@ let syncTimer = null;
 let editorTimer = null;
 let statusTimer = null;
 let saveQueue = Promise.resolve();
+let requestLogs = [];
+let selectedLogId = null;
+let requestLogsTimer = null;
+let requestLogsFetchInFlight = false;
 
 init().catch((error) => {
   console.error("Failed to load editor:", error);
@@ -113,6 +121,9 @@ async function init() {
   closeEndpointModal();
   renderSidebar();
   renderMain();
+  renderRequestLogs();
+  startRequestLogPolling();
+  void refreshRequestLogs();
 }
 
 function parseConfig(sourceConfig) {
@@ -202,6 +213,10 @@ function bindEvents() {
 
   refs.prettifyButton.addEventListener("click", () => {
     void prettifyActiveEditor();
+  });
+
+  refs.clearLogsButton.addEventListener("click", () => {
+    void clearRequestLogs();
   });
 
   refs.endpointEditForm.addEventListener("submit", (event) => {
@@ -812,6 +827,234 @@ async function syncConfig(successMessage = "Saved") {
   return saveQueue;
 }
 
+function startRequestLogPolling() {
+  if (requestLogsTimer) {
+    clearInterval(requestLogsTimer);
+  }
+
+  requestLogsTimer = setInterval(() => {
+    void refreshRequestLogs();
+  }, 1500);
+
+  window.addEventListener(
+    "beforeunload",
+    () => {
+      clearInterval(requestLogsTimer);
+    },
+    { once: true },
+  );
+}
+
+async function refreshRequestLogs() {
+  if (requestLogsFetchInFlight) return;
+
+  requestLogsFetchInFlight = true;
+
+  try {
+    const response = await fetch("/__logs", { cache: "no-store" });
+    if (!response.ok) {
+      throw new Error(`Log fetch failed: ${response.status}`);
+    }
+
+    const data = await response.json();
+    requestLogs = Array.isArray(data.logs) ? data.logs : [];
+
+    if (selectedLogId && !requestLogs.some((log) => log.id === selectedLogId)) {
+      selectedLogId = null;
+    }
+
+    renderRequestLogs();
+  } catch (error) {
+    console.error("Failed to fetch request logs:", error);
+  } finally {
+    requestLogsFetchInFlight = false;
+  }
+}
+
+async function clearRequestLogs() {
+  refs.clearLogsButton.disabled = true;
+
+  try {
+    const response = await fetch("/__logs", { method: "DELETE" });
+    if (!response.ok) {
+      throw new Error(`Log clear failed: ${response.status}`);
+    }
+
+    requestLogs = [];
+    selectedLogId = null;
+    renderRequestLogs();
+    showStatus("Logs cleared", false);
+  } catch (error) {
+    console.error("Failed to clear request logs:", error);
+    showStatus("Clear logs failed", true);
+  }
+}
+
+function renderRequestLogs() {
+  const hasLogs = requestLogs.length > 0;
+  refs.requestLogEmpty.hidden = hasLogs;
+  refs.requestLogList.hidden = !hasLogs;
+  refs.clearLogsButton.disabled = !hasLogs;
+  refs.requestLogList.innerHTML = "";
+
+  requestLogs.forEach((log) => {
+    refs.requestLogList.appendChild(createRequestLogRow(log));
+  });
+
+  const selectedLog = requestLogs.find((log) => log.id === selectedLogId) ?? null;
+  renderRequestLogDetail(selectedLog);
+}
+
+function createRequestLogRow(log) {
+  const row = document.createElement("button");
+  row.type = "button";
+  row.className = "request-log-row";
+  if (log.id === selectedLogId) row.classList.add("active");
+  row.addEventListener("click", () => {
+    selectedLogId = log.id;
+    renderRequestLogs();
+  });
+
+  const top = document.createElement("div");
+  top.className = "request-log-row-top";
+
+  const methodBadge = document.createElement("span");
+  setMethodBadge(methodBadge, log.method || "GET");
+
+  const path = document.createElement("span");
+  path.className = "request-log-path";
+  path.textContent = log.path || "/";
+
+  top.append(methodBadge, path);
+
+  const meta = document.createElement("div");
+  meta.className = "request-log-row-meta";
+
+  const status = document.createElement("span");
+  status.className = `log-status ${getStatusClass(log.statusCode)}`;
+  status.textContent = String(log.statusCode ?? "-");
+
+  const time = document.createElement("span");
+  time.textContent = formatResponseTime(log.responseTimeMs);
+
+  const timestamp = document.createElement("span");
+  timestamp.textContent = formatTimestamp(log.timestamp);
+
+  const result = document.createElement("span");
+  result.className = `result-pill result-${log.resultType || "unknown"}`;
+  result.textContent = log.resultType || "unknown";
+
+  meta.append(status, time, timestamp, result);
+  row.append(top, meta);
+
+  return row;
+}
+
+function renderRequestLogDetail(log) {
+  refs.requestLogDetail.innerHTML = "";
+  refs.requestLogDetail.hidden = !log;
+
+  if (!log) return;
+
+  const heading = document.createElement("div");
+  heading.className = "request-log-detail-heading";
+
+  const methodBadge = document.createElement("span");
+  setMethodBadge(methodBadge, log.method || "GET");
+
+  const title = document.createElement("div");
+  title.className = "request-log-detail-title";
+  title.textContent = log.path || "/";
+
+  heading.append(methodBadge, title);
+
+  const meta = document.createElement("div");
+  meta.className = "request-log-detail-grid";
+  meta.append(
+    createDetailItem("Status", String(log.statusCode ?? "-")),
+    createDetailItem("Response time", formatResponseTime(log.responseTimeMs)),
+    createDetailItem("Matched route", log.matchedRoute || "None"),
+    createDetailItem("Match type", log.matchType || "none"),
+    createDetailItem("Result", log.resultType || "unknown"),
+    createDetailItem("Timestamp", formatTimestamp(log.timestamp)),
+  );
+
+  refs.requestLogDetail.append(
+    heading,
+    meta,
+    createPayloadBlock("Params", log.params ?? {}),
+    createPayloadBlock("Query", log.query ?? {}),
+    createPayloadBlock("Request body", log.requestBody),
+    createPayloadBlock("Response body", log.responseBody),
+  );
+}
+
+function createDetailItem(label, value) {
+  const item = document.createElement("div");
+  item.className = "request-log-detail-item";
+
+  const itemLabel = document.createElement("span");
+  itemLabel.textContent = label;
+
+  const itemValue = document.createElement("strong");
+  itemValue.textContent = value;
+
+  item.append(itemLabel, itemValue);
+  return item;
+}
+
+function createPayloadBlock(label, value) {
+  const block = document.createElement("div");
+  block.className = "request-log-payload";
+
+  const title = document.createElement("div");
+  title.className = "request-log-payload-title";
+  title.textContent = label;
+
+  const body = document.createElement("pre");
+  body.textContent = formatJsonValue(value);
+
+  block.append(title, body);
+  return block;
+}
+
+function getStatusClass(statusCode) {
+  const status = Number(statusCode);
+  if (status >= 200 && status < 300) return "status-2xx";
+  if (status >= 400 && status < 500) return "status-4xx";
+  if (status >= 500) return "status-5xx";
+  return "status-other";
+}
+
+function formatResponseTime(value) {
+  const time = Number(value);
+  if (!Number.isFinite(time)) return "-";
+
+  return `${Math.max(0, Math.round(time))}ms`;
+}
+
+function formatTimestamp(timestamp) {
+  const date = new Date(timestamp);
+  if (Number.isNaN(date.getTime())) return "-";
+
+  return date.toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  });
+}
+
+function formatJsonValue(value) {
+  if (value === undefined) return "null";
+  if (typeof value === "string") return value;
+
+  try {
+    return JSON.stringify(value, null, 2);
+  } catch {
+    return String(value);
+  }
+}
+
 function showStatus(message, isError) {
   clearTimeout(statusTimer);
   refs.status.textContent = message;
@@ -986,7 +1229,13 @@ function createButton(label, className) {
 }
 
 function setMethodBadge(element, method) {
+  const normalizedMethod = String(method || "get").toLowerCase();
+
   element.className = "method-badge";
-  element.classList.add(`method-${method}`);
-  element.textContent = method.toUpperCase();
+  element.classList.add(
+    HTTP_METHODS.includes(normalizedMethod)
+      ? `method-${normalizedMethod}`
+      : "method-other",
+  );
+  element.textContent = normalizedMethod.toUpperCase();
 }

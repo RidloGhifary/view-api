@@ -80,31 +80,58 @@
           </div>
         </section>
 
-        <section class="dashboard-card response-panel">
-          <div class="response-panel-header">
-            <div class="response-title">
-              <p class="eyebrow">Responses</p>
-              <h3 id="editor-title">Response Body</h3>
-              <p id="editor-subtitle" class="muted">
-                Edit the JSON returned by this mock endpoint.
-              </p>
+        <div class="workspace-grid">
+          <section class="dashboard-card response-panel">
+            <div class="response-panel-header">
+              <div class="response-title">
+                <p class="eyebrow">Responses</p>
+                <h3 id="editor-title">Response Body</h3>
+                <p id="editor-subtitle" class="muted">
+                  Edit the JSON returned by this mock endpoint.
+                </p>
+              </div>
+
+              <div class="response-actions">
+                <button
+                  id="prettify-button"
+                  class="secondary-button"
+                  type="button"
+                >
+                  Prettify
+                </button>
+                <div id="tabs" class="tab-row" aria-label="Response tabs"></div>
+              </div>
             </div>
 
-            <div class="response-actions">
-              <button id="prettify-button" class="secondary-button" type="button">
-                Prettify
+            <div id="empty-state" class="empty-state" hidden>
+              <h3>No endpoint selected</h3>
+              <p>Add an endpoint from the sidebar to start editing responses.</p>
+            </div>
+
+            <div id="editor-container"></div>
+          </section>
+
+          <section
+            class="dashboard-card request-log-panel"
+            aria-label="Request log"
+          >
+            <div class="request-log-header">
+              <div>
+                <p class="eyebrow">Requests</p>
+                <h3>Request log</h3>
+              </div>
+              <button id="clear-logs" class="secondary-button" type="button">
+                Clear
               </button>
-              <div id="tabs" class="tab-row" aria-label="Response tabs"></div>
             </div>
-          </div>
 
-          <div id="empty-state" class="empty-state" hidden>
-            <h3>No endpoint selected</h3>
-            <p>Add an endpoint from the sidebar to start editing responses.</p>
-          </div>
-
-          <div id="editor-container"></div>
-        </section>
+            <div id="request-log-empty" class="request-log-empty">
+              No requests yet. Hit your mock API to see logs here.
+            </div>
+            <div id="request-log-list" class="request-log-list"></div>
+            <div id="request-log-detail" class="request-log-detail" hidden></div>
+          </section>
+        </div>
       </main>
     </div>
 
