@@ -1,4 +1,5 @@
 import express from "express";
+import rateLimit from "express-rate-limit";
 import path from "path";
 import { fileURLToPath } from "url";
 import { getConfig, setConfig } from "../shared/config.js";
@@ -7,8 +8,16 @@ import { clearRequestLogs, getRequestLogs } from "../shared/requestLogs.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+const editorRateLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  limit: 300,
+  standardHeaders: "draft-8",
+  legacyHeaders: false,
+});
+
 export const startEditorServer = ({ port, apiPort }) => {
   const app = express();
+  app.use(editorRateLimiter);
   app.use(express.json());
 
   // serve UI
