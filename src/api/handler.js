@@ -149,13 +149,13 @@ const sendJsonWithLog = (req, res, startedAt, options) => {
 
   res.status(options.statusCode).json(options.body);
 
-  recordRequestLog(req, {
+  recordRequestLog(req, res, {
     ...options,
     responseTimeMs,
   });
 };
 
-const recordRequestLog = (req, options) => {
+const recordRequestLog = (req, res, options) => {
   try {
     addRequestLog({
       timestamp: new Date().toISOString(),
@@ -163,17 +163,35 @@ const recordRequestLog = (req, options) => {
       path: req.path || "/",
       matchedRoute: options.match?.path ?? null,
       statusCode: options.statusCode,
+      statusText: res.statusMessage || getStatusText(options.statusCode),
       responseTimeMs: options.responseTimeMs,
       resultType: options.resultType,
       matchType: options.match?.matchType ?? "none",
       params: options.match?.params ?? {},
       query: toLogValue(req.query ?? {}),
+      requestHeaders: req.headers,
       requestBody: hasRequestBody(req) ? toLogValue(req.body) : null,
+      responseHeaders: res.getHeaders(),
       responseBody: toLogValue(options.body),
+      clientIp: req.ip || req.headers["x-forwarded-for"] || req.socket.remoteAddress,
     });
   } catch (error) {
     console.error("Failed to record request log:", error);
   }
+};
+
+const getStatusText = (statusCode) => {
+  const statusTexts = {
+    200: "OK",
+    201: "Created",
+    204: "No Content",
+    400: "Bad Request",
+    401: "Unauthorized",
+    403: "Forbidden",
+    404: "Not Found",
+    500: "Internal Server Error",
+  };
+  return statusTexts[statusCode] || "Unknown";
 };
 
 const getRouteEntries = (sourceConfig) => {

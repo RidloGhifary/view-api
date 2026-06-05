@@ -17,15 +17,19 @@
               <p>Mock endpoints</p>
             </div>
           </div>
-          <button
-            id="add-endpoint"
-            class="icon-accent-button"
-            type="button"
-            title="Add endpoint"
-            aria-label="Add endpoint"
-          >
-            +
-          </button>
+          <div class="header-actions">
+            <div class="branch-badge">main</div>
+            <a href="/requests" class="secondary-button nav-link" title="Request Log">Logs</a>
+            <button
+              id="add-endpoint"
+              class="icon-accent-button"
+              type="button"
+              title="Add endpoint"
+              aria-label="Add endpoint"
+            >
+              +
+            </button>
+          </div>
         </div>
 
         <div id="endpoint-list" aria-label="Endpoint list"></div>
@@ -109,27 +113,6 @@
             </div>
 
             <div id="editor-container"></div>
-          </section>
-
-          <section
-            class="dashboard-card request-log-panel"
-            aria-label="Request log"
-          >
-            <div class="request-log-header">
-              <div>
-                <p class="eyebrow">Requests</p>
-                <h3>Request log</h3>
-              </div>
-              <button id="clear-logs" class="secondary-button" type="button">
-                Clear
-              </button>
-            </div>
-
-            <div id="request-log-empty" class="request-log-empty">
-              No requests yet. Hit your mock API to see logs here.
-            </div>
-            <div id="request-log-list" class="request-log-list"></div>
-            <div id="request-log-detail" class="request-log-detail" hidden></div>
           </section>
         </div>
       </main>
