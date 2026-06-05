@@ -32,7 +32,10 @@ program
     loadConfig(configPath);
 
     startApiServer({ port: Number(options.apiPort) });
-    startEditorServer({ port: Number(options.uiPort) });
+    startEditorServer({
+      port: Number(options.uiPort),
+      apiPort: Number(options.apiPort),
+    });
   });
 
 program.parse();

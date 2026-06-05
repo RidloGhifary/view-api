@@ -17,15 +17,19 @@
               <p>Mock endpoints</p>
             </div>
           </div>
-          <button
-            id="add-endpoint"
-            class="icon-accent-button"
-            type="button"
-            title="Add endpoint"
-            aria-label="Add endpoint"
-          >
-            +
-          </button>
+          <div class="header-actions">
+            <div class="branch-badge">main</div>
+            <a href="/requests" class="secondary-button nav-link" title="Request Log">Logs</a>
+            <button
+              id="add-endpoint"
+              class="icon-accent-button"
+              type="button"
+              title="Add endpoint"
+              aria-label="Add endpoint"
+            >
+              +
+            </button>
+          </div>
         </div>
 
         <div id="endpoint-list" aria-label="Endpoint list"></div>
@@ -80,31 +84,37 @@
           </div>
         </section>
 
-        <section class="dashboard-card response-panel">
-          <div class="response-panel-header">
-            <div class="response-title">
-              <p class="eyebrow">Responses</p>
-              <h3 id="editor-title">Response Body</h3>
-              <p id="editor-subtitle" class="muted">
-                Edit the JSON returned by this mock endpoint.
-              </p>
+        <div class="workspace-grid">
+          <section class="dashboard-card response-panel">
+            <div class="response-panel-header">
+              <div class="response-title">
+                <p class="eyebrow">Responses</p>
+                <h3 id="editor-title">Response Body</h3>
+                <p id="editor-subtitle" class="muted">
+                  Edit the JSON returned by this mock endpoint.
+                </p>
+              </div>
+
+              <div class="response-actions">
+                <button
+                  id="prettify-button"
+                  class="secondary-button"
+                  type="button"
+                >
+                  Prettify
+                </button>
+                <div id="tabs" class="tab-row" aria-label="Response tabs"></div>
+              </div>
             </div>
 
-            <div class="response-actions">
-              <button id="prettify-button" class="secondary-button" type="button">
-                Prettify
-              </button>
-              <div id="tabs" class="tab-row" aria-label="Response tabs"></div>
+            <div id="empty-state" class="empty-state" hidden>
+              <h3>No endpoint selected</h3>
+              <p>Add an endpoint from the sidebar to start editing responses.</p>
             </div>
-          </div>
 
-          <div id="empty-state" class="empty-state" hidden>
-            <h3>No endpoint selected</h3>
-            <p>Add an endpoint from the sidebar to start editing responses.</p>
-          </div>
-
-          <div id="editor-container"></div>
-        </section>
+            <div id="editor-container"></div>
+          </section>
+        </div>
       </main>
     </div>
 

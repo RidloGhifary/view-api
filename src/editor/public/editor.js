@@ -64,8 +64,8 @@ const customTheme = EditorView.theme({
   "&": {
     height: "100%",
     fontSize: "14px",
-    backgroundColor: "#0f172a",
-    color: "#e5e7eb",
+    backgroundColor: "transparent",
+    color: "var(--text)",
   },
   ".cm-scroller": {
     fontFamily: '"JetBrains Mono", "Fira Code", monospace',
@@ -74,12 +74,12 @@ const customTheme = EditorView.theme({
     padding: "18px",
   },
   ".cm-gutters": {
-    backgroundColor: "#0b1220",
-    color: "#64748b",
-    border: "none",
+    backgroundColor: "transparent",
+    color: "var(--muted)",
+    borderRight: "1px solid var(--border-soft)",
   },
   ".cm-activeLine, .cm-activeLineGutter": {
-    backgroundColor: "rgba(6, 182, 212, 0.08)",
+    backgroundColor: "var(--accent-soft)",
   },
 });
 
@@ -986,7 +986,13 @@ function createButton(label, className) {
 }
 
 function setMethodBadge(element, method) {
+  const normalizedMethod = String(method || "get").toLowerCase();
+
   element.className = "method-badge";
-  element.classList.add(`method-${method}`);
-  element.textContent = method.toUpperCase();
+  element.classList.add(
+    HTTP_METHODS.includes(normalizedMethod)
+      ? `method-${normalizedMethod}`
+      : "method-other",
+  );
+  element.textContent = normalizedMethod.toUpperCase();
 }
